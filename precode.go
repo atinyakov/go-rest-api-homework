@@ -61,7 +61,7 @@ func getTasks(w http.ResponseWriter, r *http.Request) {
 }
 
 func addTask(w http.ResponseWriter, r *http.Request) {
-	var newTask Task
+	var task Task
 
 	var buf bytes.Buffer
 
@@ -71,20 +71,20 @@ func addTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = json.Unmarshal(buf.Bytes(), &newTask); err != nil {
+	if err = json.Unmarshal(buf.Bytes(), &task); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	if newTask.ID == "" {
+	if task.ID == "" {
 		http.Error(w, "ID требуется, но не передано", http.StatusBadRequest)
 		return
 	}
 
 	ua := r.Header["User-Agent"]
-	newTask.Validate(ua)
+	task.Validate(ua)
 
-	tasks[newTask.ID] = newTask
+	tasks[task.ID] = task
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
