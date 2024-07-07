@@ -41,12 +41,6 @@ var tasks = map[string]Task{
 	},
 }
 
-func (t *Task) Validate(ua []string) {
-	if len(t.Applications) == 0 {
-		t.Applications = ua
-	}
-}
-
 // Ниже напишите обработчики для каждого эндпоинта
 func getTasks(w http.ResponseWriter, r *http.Request) {
 	resp, err := json.Marshal(tasks)
@@ -76,13 +70,21 @@ func addTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	_, exists := tasks[task.ID]
+	if exists {
+		http.Error(w, "Задача уже существует", http.StatusBadRequest)
+		return
+	}
+
 	if task.ID == "" {
 		http.Error(w, "ID требуется, но не передано", http.StatusBadRequest)
 		return
 	}
 
 	ua := r.Header["User-Agent"]
-	task.Validate(ua)
+	if len(task.Applications) == 0 {
+		task.Applications = ua
+	}
 
 	tasks[task.ID] = task
 
